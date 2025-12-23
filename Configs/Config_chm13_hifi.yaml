@@ -1,0 +1,78 @@
+# reference guided assembly 管道参数配置文件
+## Test on chm13 hifi
+# ctg_ls: [chr1,chr2,chr3]  # 需要分析的contig列表
+
+### step1
+step1_minimap2_params_ls: []    # 
+
+### step2
+dp_params:
+  dp_upper_bound: 1.45   # 30 -> 48, dp * upper_bpund -> upper_dp
+  dp_lower_bound: 0.35    # 30-> 9, dp * lower_bpund -> lower_dp
+  dp_win_size: 100  # win_size of tool(mosdepth) to calculate depth
+  block_size: 10000000   # 计算每个block的标准depth值
+  cluster_dis: 1000   # 对找到的区间进行一轮聚类
+clip_params:
+  min_clip_len: 500 # 超过这个长度的认为是异常clip
+  min_clip_portion: 0.25
+  min_clip_num: 5   # 超过这个数目，认为是异常区域
+  clip_win_size: 1000 #
+apply_pileup: true
+pileup_params:
+  reg_size: 1000000
+  win_size: 1000
+  step_size: 500
+  min_correct_portion: 0.92
+  max_differ_portion: 0.1
+  max_disagree_portion: 0.012
+  cluster_dis: 2000
+  reg_size: 1000000
+
+
+### step 3
+min_denovo_to_keep: 10000
+## 
+denovo_asm:
+  hifi: hifiasm # 
+  ont: flye   # flye、wtdbg2、shasta  shasta用于人类纳米孔数据组装效果比较好
+  shasta_option_ls: [--config, Nanopore-Human-SingleFlowcell-May2022]  # human: Nanopore-Human-SingleFlowcell-May2022, other_ont: Nanopore-May2022
+  hifiasm_option_ls: [-l0]
+  wtdbg2_option_ls: []
+  flye_option_ls: []  # choose (--meta metagenome / uneven coverage mode)
+## 聚类参数
+get_candidate_op:
+  clip_merge_dis: 500  # 1000
+  asm_candidate_cluster_dis: 20000  # 初始一轮聚类
+cluster_by_asm_candidate:   # 根据asm区域进行聚类
+  radius_1: 30000   # 第一轮简单聚类，合并asm region周报的reads区域
+  radius_2: 100000  # Merge large local asm region and expand region
+  radius_3: 1000000 # 暂未使用的参数
+  # 区间扩充的参数
+  reg_len_2: 50000
+  reg_len_3: 1000000
+  reg_expand_1: 20000   # 对所有候选区域进行的扩充
+  reg_expand_2: 40000
+  reg_expand_3: 100000
+  # 两轮聚类: 大的聚类，用于人类基因组
+  big_cluster:
+    apply_big_cluster: true   # true/false 主要用于人类基因组中心粒区域和一些大的区域的合并
+    ## 按照区间大小和距离进行聚类
+    reg_size: 100       # 聚类的区间大小
+    cluster_dis: 200000 # 按这个尺度来聚类
+    ## 按照密度进行聚类
+    radius: 2000000   # 计算密度的尺度
+    clu1: 1000000     # 一级聚类
+    clu2: 500000      # 
+    t1: 100000        # 区间大小定义：t1表示超大区间，t2表示中等区间
+    t2: 10000         # 
+
+### step4 polish
+step4_minimap2_params_ls: [--secondary=no]
+
+### step5 scaffolding 可能会有少量misassembly的增加
+Scaffold_Params:
+  ## 
+  MAX_GAP: 1000000  # gap 小于这个长度用于scaffolding
+  MIN_CONNECT_SEQ: 20000000 # 大于这个长度的序列用于scaffolding
+  N_fill_size: 20
+

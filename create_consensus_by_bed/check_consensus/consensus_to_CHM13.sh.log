@@ -1,0 +1,15 @@
+[M::mm_idx_gen::55.283*1.61] collected minimizers
+[M::mm_idx_gen::61.452*2.89] sorted minimizers
+[M::main::61.456*2.89] loaded/built the index for 24 target sequence(s)
+[M::mm_mapopt_update::69.849*2.66] mid_occ = 177
+[M::mm_idx_stat] kmer size: 19; skip: 10; is_hpc: 0; #seq: 24
+[M::mm_idx_stat::74.415*2.56] distinct minimizers: 389105195 (91.92% are singletons); average occurrences: 1.459; average spacing: 5.491; total length: 3117275501
+[M::worker_pipeline::272.108*1.42] mapped 1 sequences
+[M::main] Version: 2.24-r1122
+[M::main] CMD: minimap2 -ax asm20 -t 48 /public/home/hpc214712170/shixf/projects/ref-guided-assembly/T2T_CHM13/GCF_009914755.1_T2T-CHM13v2.0_genomic.fna /public/home/hpc214712170/shixf/new_code/assembly/Test_code/resolve_err/create_consensus_by_bed/NC_060930.1_hap1.fasta
+[M::main] Real time: 272.372 sec; CPU: 387.756 sec; Peak RSS: 19.624 GB
+
+real	4m33.275s
+user	5m19.242s
+sys	1m9.209s
+** minimap2 done **

@@ -1,0 +1,116 @@
+# reference guided assembly 管道参数配置文件
+## Test on chm13 hifi
+# ctg_ls: [chr1,chr2,chr3]  # 需要分析的contig列表
+
+### step1
+step1:
+  minimap2_params_ls: []    # 
+
+### step2
+step2:
+  dp_params:
+    dp_upper_bound: 1.45   # 30 -> 48, dp * upper_bpund -> upper_dp
+    dp_lower_bound: 0.35    # 30-> 9, dp * lower_bpund -> lower_dp
+    dp_win_size: 100  # win_size of tool(mosdepth) to calculate depth
+    block_size: 10000000   # 计算每个block的标准depth值
+    cluster_dis: 1000   # 对找到的区间进行一轮聚类
+  clip_params:
+    min_clip_len: 500 # 超过这个长度的认为是异常clip。abnormal clip。需要对hifi数据和ont数据的clip进行一定的统计
+    min_clip_portion: 0.25
+    min_clip_num: 5   # 超过这个数目，认为是异常区域。与覆盖度有关，需要对覆盖度进行一定的分析
+    clip_win_size: 1000 #
+  apply_pileup: true
+  pileup_params:
+    reg_size: 1000000
+    win_size: 400   # 1000
+    step_size: 200  # 500
+    min_correct_portion: 0.9    # 一致性比例（类似identity）
+    max_differ_portion: 0.1     # 插入删除的不一致比例
+    max_disagree_portion: 0.02  # 单碱基不一致比例，用来暗示一些隐含的比对错误区域。但是对某些生物，基因组可能存在大量的snp，就需要把值开大点
+    cluster_dis: 1000
+    
+
+
+### step3
+step3:
+  min_denovo_to_keep: 10000 # 集成到过滤器里面去
+  remove_secondary: true
+  reg_expand_dis: 500   # 对第二步的候选区间进行扩充
+  depths: 
+    win_size: 100 # 
+    block_size: 5000  # 用于求block dp的
+  ## 
+  solve_by_read: 
+    # dp_upper_bound: 3   # 用读数能解决的上限，对读数解决区域的dp进行限制
+    block_high_dp_bound: 2.5  # 
+  denovo_asm:
+    hifi: hifiasm # 
+    ont: miniasm   # flye、wtdbg2、shasta  shasta用于人类纳米孔数据组装效果比较好
+    shasta_option_ls: [--config, Nanopore-May2022]  # human: Nanopore-Human-SingleFlowcell-May2022, other_ont: Nanopore-May2022
+    hifiasm_option_ls: [-l0]
+    wtdbg2_option_ls: []
+    flye_option_ls: []  # choose (--meta metagenome / uneven coverage mode)
+    miniasm_option_ls: []
+  ## 聚类参数
+  get_candidate_op:
+    clip_merge_dis: 1000  # 1000
+    merge_by_clip_dp: false   # 效果不太行，且十分费时，false
+    asm_candidate_cluster_dis: 30000  # 初始一轮聚类
+  cluster_by_asm_candidate:   # 根据asm区域进行聚类
+    radius_1: 10000   # 第一轮简单聚类，合并asm region周边的reads区域
+    radius_2: 50000  # 最后一轮Merge local asm region and expand region
+    radius_3: 1000000 # 暂未使用的参数
+    # 区间扩充的参数
+    reg_len_2: 20000
+    reg_len_3: 1000000
+    reg_expand_1: 10000   # 对所有候选区域进行的扩充
+    reg_expand_2: 20000   # >reg_len_2，大型基因组可以开大点
+    reg_expand_3: 50000   # >reg_len_3
+    # 两轮聚类: 大的聚类，用于人类基因组
+    big_cluster:
+      apply_big_cluster: false   # true/false 主要用于人类基因组中心粒区域和一些大的区域的合并
+      ## 按照区间大小和距离进行聚类
+      reg_size: 100       # 聚类的区间大小
+      cluster_dis: 200000 # 按这个尺度来聚类
+      ## 按照密度进行聚类
+      radius: 2000000   # 计算密度的尺度
+      clu1: 1000000     # 一级聚类
+      clu2: 500000      # 
+      t1: 100000        # 区间大小定义：t1表示超大区间，t2表示中等区间
+      t2: 10000         # 
+  ## 
+  apply_denovo_by_reg: true
+  denovo_by_reg: 
+    max_reg_len: 1000000
+    apply_bound: true  # 边界是否也算在里面
+    keep_frage: false   # 最好不要收集, 有过多的重复组装碎片
+    dp_upper_bound: 2.5   # dp max than this will
+    block_high_dp_bound: 5
+    parallel: true
+  ## 
+  apply_ctg_denovo: true   # 作为备选用于覆盖度的极不均匀contig
+  denovo_by_ctg:
+    apply_all: false     # true不管是否正常contig(也就是忽略下面的参数判断了)，全部apply_ctg_denovo。但是或许会引入太多的碎片不好处理，因此还是直接合并交给第三组。
+    min_cov_ratio: 0.2  # abnormal contig
+    dp_upper_bound: 2   # avg_ctg_dp / whole_dp
+    dp_lower_bound: 0.5
+  ##
+  apply_contig_filter: true  # 对于局部ctg_asm，和最后的fragements这类数据，进行purgedups的过滤，否则可能引入过多的重复和垃圾碎片
+  contig_filter: 
+    min_len: 10000    # 保留contig长度
+    purgedups: true   # 对一些重复的进行清除，根据比对的位置
+    
+
+### step4 polish
+step4:
+  minimap2_params_ls: [--secondary=no]
+  racon_params_ls: []
+
+### step5 scaffolding 可能会有少量misassembly的增加
+step5:
+  Scaffold_Params:
+    ## 
+    MAX_GAP: 1000000  # gap 小于这个长度用于scaffolding
+    MIN_CONNECT_SEQ: 20000000 # 大于这个长度的序列用于scaffolding
+    N_fill_size: 20
+

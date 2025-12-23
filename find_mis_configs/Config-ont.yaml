@@ -1,0 +1,53 @@
+# LRMD 管道参数配置文件
+# ctg_ls: [chr1,chr2,chr3]  # 需要分析的contig列表
+# min_MQ设为0/1会更优   map_Q太严了，会导致大量的比对过滤
+### step1
+step1:
+  minimap2_params_ls: []    # 
+
+### step2
+step2:
+  win_size: 400
+  apply_dp: true
+  dp_params:
+    dp_upper_bound: 1.75   # dp * upper_bpund -> upper_dp
+    dp_lower_bound: 0.15    # dp * lower_bpund -> lower_dp
+    dp_win_size: 100  # win_size of tool(mosdepth) to calculate depth
+    block_size: 10000000   # 计算每个block的标准depth值
+    cluster_dis: 1000   # 对找到的区间进行一轮聚类
+    min_MQ: 0  # 0 for asm   取0的话下面的也要取0
+  apply_clip: true
+  clip_params:
+    min_clip_len: 500 # 超过这个长度的认为是异常clip。abnormal clip。需要对hifi数据和ont数据的clip进行一定的统计
+    min_clip_portion: 0.35  # 0.25
+    min_clip_num: 5   # 超过这个数目，认为是异常区域。与覆盖度有关，需要对覆盖度进行一定的分析
+    clip_win_size: 1000 #
+    min_MQ: 0  # keep with dp
+  apply_pileup: true
+  pileup_params:
+    reg_size: 1000000
+    win_size: 400   # 1000
+    step_size: 200  # 500
+    min_correct_portion: 0.9    # 一致性比例（类似identity）hifi:0.95, ont:0.9
+    max_differ_portion: 0.2     # 插入删除的不一致比例  hifi:0.15, ont:0.2
+    max_disagree_portion: 0.1  # 单碱基不一致比例，用来暗示一些隐含的比对错误区域。但是对某些生物，基因组可能存在大量的snp，就需要把值开大点，或者对于高错误率读数，同理  hifi:0.05, ont:0.1
+    cluster_dis: 1000
+    min_MQ: 0  # keep with dp
+  filter2:
+    bound_span: 10000 # bound skip
+    check_win_size: 10000 # 10000/8000/6000  / 6000 for hifi   / 10000 for ONT
+    min_span_num: 3   # 2 for hifi, 3 for ont
+    min_supp_portion: 0.4  # 有多少成的读数表明没有mis
+    min_MQ: 1    # 20/3/1。hifi_asm    map_Q太严了，导致大量的比对过滤掉了->3。hifi_asm:3
+    MIN_ALIGN_LENGTH: 10000
+    MIN_ALIGN_RATE: 0.95
+    ins_threshold: 100
+    del_threshold: 100
+    min_clip_len: 500
+  filter:
+    min_span_num: 3
+    MIN_ALIGN_LENGTH: 10000
+    MIN_ALIGN_RATE: 0.95
+    ins_threshold: 100
+    del_threshold: 100
+

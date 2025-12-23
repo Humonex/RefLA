@@ -1,0 +1,52 @@
+# reference guided assembly 管道参数配置文件
+## Test on chm13 hifi
+# ctg_ls: [chr1,chr2,chr3]  # 需要分析的contig列表
+
+## step1
+step1_minimap2_params_ls: [-k,]    # 
+
+### step2
+dp_params:
+  dp_upper_bound: 1.45   # 30 -> 48, dp * upper_bpund -> upper_dp
+  dp_lower_bound: 0.35    # 30-> 9, dp * lower_bpund -> lower_dp
+  dp_win_size: 100  # win_size of tool(mosdepth) to calculate depth
+  block_size: 5000000   # 计算每个block的标准depth值
+  cluster_dis: 1000   # 对找到的区间进行一轮聚类
+clip_params:
+  min_clip_len: 500 # 超过这个长度的认为是异常clip
+  min_clip_portion: 0.25
+  min_clip_num: 5   # 超过这个数目，认为是异常区域
+  clip_win_size: 1000 #
+
+### step 3
+## 
+denovo_asm:
+  hifi: hifiasm # 
+  ont: shasta   # wtdbg2  shasta用于人类纳米孔数据组装效果比较好
+  tool_config: Nanopore-Human-SingleFlowcell-May2022  # config of denovo assembly tools, shasta assembler must choose it
+## 聚类参数
+get_candidate_op:
+  clip_merge_dis: 500  # 50, 1000
+  asm_candidate_cluster_dis: 20000
+cluster_by_asm_candidate:
+  radius_1: 30000
+  radius_2: 100000
+  radius_3: 1000000
+  #
+  reg_len_2: 50000
+  reg_len_3: 1000000
+  #
+  reg_expand_1: 20000
+  reg_expand_2: 40000
+  reg_expand_3: 100000
+
+### step4 polish
+step4_minimap2_params_ls: [--secondary=no]
+
+### step5 scaffolding 可能会有少量misassembly的增加
+Scaffold_Params:
+  ## 
+  MAX_GAP: 1000000  # gap 小于这个长度用于scaffolding
+  MIN_CONNECT_SEQ: 20000000 # 大于这个长度的序列用于scaffolding
+  N_fill_size: 20
+

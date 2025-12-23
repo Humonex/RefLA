@@ -1,0 +1,6 @@
+@SQ	SN:chr_1	LN:120
+@PG	ID:minimap2	PN:minimap2	VN:2.24-r1122	CL:minimap2 -ax map-ont /public/home/hpc214712170/shixf/new_code/assembly/Test_code/resolve_err/Pipe/create_consensus_by_bed/test_files/target.fa /public/home/hpc214712170/shixf/new_code/assembly/Test_code/resolve_err/Pipe/create_consensus_by_bed/test_files/test_fa.fa
+contig_1	0	chr_1	3	60	4S118M2S	*	0	0	AAGGTTCAGCAATAAGAAAATGTGAGCATACTATATATTAATATAAATGATATATCATAAACATAAGCGTATCCAATTTTGACATATCCTTCACGAATATTGTTAGATAACTCTGAACTGTGCC	*	NM:i:0	ms:i:236	AS:i:236	nn:i:0	tp:A:P	cm:i:19	s1:i:105	s2:i:0	de:f:0	rl:i:0
+contig_2	4	*	0	0	*	*	0	0	GTGTCAAGTCTCAATAGATTGTTATAAGCACTTCCTATACAGTTTTAACCTATGCGAATA	*	rl:i:0
+contig_3	4	*	0	0	*	*	0	0	GTGTCAAGTCTCAATAGATTGTTATAAGCACTTCCTATACAGTTTTAACCTATGCGAATA	*	rl:i:0
+contig_4	4	*	0	0	*	*	0	0	GTGTCAAGTCTCAATAGATTGTTATAAGCACTTCCTATACAGTT	*	rl:i:0
